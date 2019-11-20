@@ -55,3 +55,33 @@ class SVM(object):
                 if abs(self.E[j] - EI) > pre:
                     max_ = j
             return i, j
+
+    def train(self, features, labels):
+        self.init_args(features, labels)
+        for i in range(self.max_iter):
+            i1, i2 = self.init_alpha()
+            alpha1_old = self.alpha[i1]
+            alpha2_old = self.alpha[i2]
+            if (self.y[i1] != self.y[i2]):
+                L = max(0, alpha2_old - alpha1_old)
+                H = min(self.C, self.C + alpha2_old - alpha1_old)
+            else:
+                L = max(0, alpha2_old + alpha1_old - self.C)
+                H = min(self.C, alpha2_old + alpha1_old)
+            E1 = self.E[i1]
+            E2 = self.E[i2]
+            K11 = self.kernel(self.X[i1], self.X[i1])
+            K22 = self.kernel(self.X[i2], self.X[i2])
+            K12 = self.kernel(self.X[i1], self.X[i2])
+            eta = K11 + K22 - K12
+            alpha2_new_unc = alpha2_old + self.y[i2] * (E1 - E2) / eta
+            if (alpha2_new_unc > H):
+                alpha2_new = H
+            elif (L <= alpha2_new_unc <= H):
+                alpha2_new = alpha2_new_unc
+            else:
+                alpha2_new = L
+
+            alpha1_new = alpha1_old + self.y[i1] * self.y[i2] * (alpha2_old - alpha2_new)
+            b_old = self.b
+            b1_new = -E1 - self.y[i1] *
